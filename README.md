@@ -1,3 +1,3 @@
 # CNN
-CNN implementation in Python
-Different layer implementation going on
+o CNN implementation in Python.
+o Different layer implementation going on.
