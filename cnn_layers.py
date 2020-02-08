@@ -277,6 +277,14 @@ def dLeaky_ReLu(input, alpha = 0.01):
                 input[o][r][c] = max(alpha, input[o][r][c])		
     return input	
 
+def fully_connected_3d(input):
+    print "Fully connected input shape:", input.shape
+    print input
+    (oc, h, w) = input.shape
+    fc = input.reshape(oc * h * w, 1)
+    print "After flatten: Shape:", fc.shape
+    print fc
+
 def main(argv):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-oc','--op_channels', default=1, help='Number of output channels', required=False)
@@ -334,9 +342,11 @@ def main(argv):
     print "Avg pool out shape:", avg_pool_out.shape
     print avg_pool_out
 
-    relu_out = ReLu(avg_pool_out)
+    relu_out = ReLu(max_pool_out)
     print "ReLu shape:", relu_out.shape
-    print relu_out			
+    print relu_out		
+    
+    fully_connected_3d(relu_out)	
      
 
 if __name__ == "__main__":
