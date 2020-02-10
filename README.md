@@ -7,4 +7,6 @@
     * Avgpool
     * ReLu
     * LeakyReLu
-    * Fully connected (On going)
+    * Fully connected 
+    * SoftMax
+- Example nets added
