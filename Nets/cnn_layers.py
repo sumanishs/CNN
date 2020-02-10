@@ -41,17 +41,17 @@ def add_pad(input, hpad = 0, vpad = 0):
     return output
 
 def conv_op_2d(input, kernel, hstride = 1, vstride = 1, stride = -1, pad = "NONE"):
-    print "Input shape:", input.shape
-    print "Input:\n", input 
-    print "Kernel shape:", kernel.shape
-    print "Kernel:\n", kernel
-    print "Padding:", pad
+    #print "Input shape:", input.shape
+    #print "Input:\n", input 
+    #print "Kernel shape:", kernel.shape
+    #print "Kernel:\n", kernel
+    #print "Padding:", pad
     
     if stride != -1:
         hstride = stride
         vstride = stride
-    print "Horizontal stride:", hstride
-    print "Vertical stride:", vstride
+    #print "Horizontal stride:", hstride
+    #print "Vertical stride:", vstride
 
     kh = kernel.shape[0]
     kw = kernel.shape[1]
@@ -64,7 +64,7 @@ def conv_op_2d(input, kernel, hstride = 1, vstride = 1, stride = -1, pad = "NONE
     oh = ((ih - kh)/hstride) + 1
     ow = ((iw - kw)/vstride) + 1
     name = calling() 
-    print "(", name, ")", "Output size:", oh , "x" , ow
+    #print "(", name, ")", "Output size:", oh , "x" , ow
     output = np.zeros([oh, ow], dtype = float)
     outr = -1
     outc = -1		
@@ -165,7 +165,7 @@ def conv_op_3d(input, kernel, hstride = 1, vstride = 1, stride = -1, pad = "NONE
             wt = kernel[o][i]
             cnv = conv_op_2d(img, wt, stride = stride, pad = pad)
             conv_tmp[o][i] = cnv
-    print "Conv Tmp:\n", conv_tmp
+    #print "Conv Tmp:\n", conv_tmp
 
     conv = np.zeros([oc, oh, ow], dtype = float)
 
@@ -252,24 +252,6 @@ def avg_pool_3d(input, kh = 2, kw = 2, kernel_size = -1, hstride = 2, vstride = 
 			pool_out[o][outr][outc] = mean_val
     return pool_out 
 
-def ReLu_1d(input):
-    oc = input.shape[0]
-    for o in range(oc):
-        input[o] = max(0, input[o])		
-    return input	
-
-def Leaky_ReLu_1d(input, alpha = 0.01):
-    oc = input.shape[0]
-    for o in range(oc):
-        input[o] = max(alpha * input[o], input[o])		
-    return input	
-
-def dLeaky_ReLu_1d(input, alpha = 0.01):
-    oc = input.shape[0]
-    for o in range(oc):
-        input[o] = max(alpha, input[o])		
-    return input	
-
 def ReLu_3d(input):
     oc = input.shape[0]
     ih = input.shape[1]
@@ -280,7 +262,13 @@ def ReLu_3d(input):
                 input[o][r][c] = max(0, input[o][r][c])		
     return input	
 
-def Leaky_ReLu_3d(input, alpha = 0.01):
+def ReLu_1d(input):
+    oc = input.shape[0]
+    for o in range(oc):
+        input[o] = max(0, input[o])		
+    return input	
+
+def Leaky_ReLu(input, alpha = 0.01):
     oc = input.shape[0]
     ih = input.shape[1]
     iw = input.shape[2]
@@ -290,7 +278,7 @@ def Leaky_ReLu_3d(input, alpha = 0.01):
                 input[o][r][c] = max(alpha * input[o][r][c], input[o][r][c])		
     return input	
 
-def dLeaky_ReLu_3d(input, alpha = 0.01):
+def dLeaky_ReLu(input, alpha = 0.01):
     oc = input.shape[0]
     ih = input.shape[1]
     iw = input.shape[2]
@@ -321,89 +309,3 @@ def flatten(input):
     print "After flatten: Shape:", flatted.shape
     print flatted
     return flatted
-
-def main(argv):
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-oc','--op_channels', default=1, help='Number of output channels', required=False)
-    parser.add_argument('-ic','--ip_channels', default=1, help='Number of output channels', required=False)
-    parser.add_argument('-iw','--img_width', default=8, help='Input image width', required=False)
-    parser.add_argument('-ih','--img_height', default=8, help='Input image height', required=False)
-    parser.add_argument('-k','--kernel', default=5, help='Kernel size', required=False)
-    parser.add_argument('-p','--padding', default='SAME', help='Padding(SAME/NONE)', required=False)
-    parser.add_argument('-f','--filler', default='rand', help='Weight matrix filler type(mod/inc/rand)', required=False)
-    args = parser.parse_args()
-    
-    oc = int(args.op_channels)
-    ic = int(args.ip_channels)
-    iw = int(args.img_width)
-    ih = int(args.img_height)
-    K  = int(args.kernel)
-    filler = args.filler
-    print "Input image size:(", ih ,"x", iw, ")"
-    print "Number of output channels:", oc
-    print "Number of input channels:", ic
-    print "Kernel size:", K
-    print "Filler type:", filler
-
-    ker = np.array([[1, 0, 1],
-                  [0, 1, 0],
-                  [1, 0, 1]
-                 ])
-    inp = np.array([[1,1,1,0,0],
-                  [0,1,1,1,0],
-                  [0,0,1,1,1],
-                  [0,0,1,1,0],
-                  [0,1,1,0,0]      
-                 ])
-    
-    image = np.zeros([ic, ih, iw], dtype = float)
-    for i in range(ic):
-        fillarray_2d(image[i], filler, i)
-
-    weights = np.zeros([oc, ic, K, K], dtype = float)
-    for i in range(oc):
-        fillarray_3d(weights[i], filler)
-   
-    print "Image:\n", image
-    print "Weights:\n", weights 
-    
-    conv_out = conv_op_3d(image, weights, stride = 1, pad = args.padding)
-    print "Convolution output shape:", conv_out.shape
-    print "Convolve output:\n", conv_out
-    
-    max_pool_out = max_pool_3d(conv_out, kernel_size = 2, stride = 2)
-    print "Max pool out shape:", max_pool_out.shape
-    print max_pool_out	
-
-    avg_pool_out = avg_pool_3d(conv_out, kernel_size = 2, stride = 2)
-    print "Avg pool out shape:", avg_pool_out.shape
-    print avg_pool_out
-
-    relu_out = ReLu_3d(max_pool_out)
-    print "ReLu shape:", relu_out.shape
-    print relu_out		
-   
-    flat = flatten(relu_out)
-
-    fc_out_n = 6
-    fc0_weights = np.zeros([fc_out_n, flat.shape[0]], dtype = float)
-    for i in range(fc_out_n):
-        fillarray_1d(fc0_weights[i], filler, i)
-    fc0_out = fully_connected_1d(flat, fc0_weights, fc_out_n)	
-    print "FC0 output shape:", fc0_out.shape
-    print fc0_out
-    
-    fc_out_n = 4
-    fc1_weights = np.zeros([fc_out_n, fc0_out.shape[0]], dtype = float)
-    for i in range(fc_out_n):
-        fillarray_1d(fc1_weights[i], filler, i)
-    fc1_out = fully_connected_1d(fc0_out, fc1_weights, fc_out_n)	
-    print "FC1 output shape:", fc1_out.shape
-    print fc1_out
-    
-    soft_max_out = softmax(fc1_out)
-    print "Softmax shape:", soft_max_out.shape
-    print soft_max_out 
-
-if __name__ == "__main__":
-    main(sys.argv)
